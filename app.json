@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "scanplantapp",
+    "slug": "snack-90ee2788-f626-49a3-9bc8-32ee68741ee3",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Este aplicativo precisa acessar a câmera para tirar fotos de plantas.",
+        "NSPhotoLibraryUsageDescription": "Este aplicativo precisa acessar a galeria para selecionar fotos de plantas.",
+        "NSLocationWhenInUseUsageDescription": "Este aplicativo precisa acessar sua localização para mostrar onde as plantas foram encontradas."
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyDummy_Key_Replace_With_Real_Key"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_MEDIA_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDummy_Key_Replace_With_Real_Key"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
