@@ -79,8 +79,9 @@ export default class CriarConta extends Component {
     }
   }
 
-  // Sua lógica para voltar (sem alterações)
+  // Sua lógica para voltar (adicionando um comentário explicativo)
   voltar() {
+    // O botão de voltar já está implementado com essa função
     this.props.navigation.goBack();
   }
 

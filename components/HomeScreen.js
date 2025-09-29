@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Colors, Typography, Spacing, BorderRadius, Shadows, BaseStyles, Icons } from './styles/DesignSystem';
+import PlantAssistantButton from './PlantAssistantChat';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -27,18 +28,32 @@ const HomeScreen = () => {
     navigation.navigate('SearchScreen');
   };
 
+  const goToProfileSettings = () => {
+    navigation.navigate('ProfileSettings');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background.primary} />
       
+      {/* Header com logo e botão de perfil */}
+      <View style={styles.header}>
+        <Image
+          source={require('../assets/imagemlogotcc.png')}
+          style={styles.smallLogo}
+          resizeMode="contain"
+        />
+        <TouchableOpacity 
+          style={styles.profileButton}
+          onPress={goToProfileSettings}
+        >
+          <Text style={styles.profileIcon}>{Icons.settings}</Text>
+        </TouchableOpacity>
+      </View>
+      
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {/* Logo Container */}
         <View style={styles.logoContainer}>
-          <Image
-            source={require('../assets/imagemlogotcc.png')}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
           <Text style={styles.welcomeText}>Bem-vindo ao ScanPlant</Text>
           <Text style={styles.descriptionText}>
             Descubra o mundo das plantas com inteligência artificial
@@ -111,6 +126,9 @@ const HomeScreen = () => {
           </View>
         </View>
       </ScrollView>
+      
+      {/* Botão flutuante do assistente de IA */}
+      <PlantAssistantButton />
     </SafeAreaView>
   );
 };
@@ -118,6 +136,38 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     ...BaseStyles.container,
+  },
+  
+  // Estilo para o header com botão de perfil
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    backgroundColor: Colors.background.primary,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border.light,
+  },
+  
+  smallLogo: {
+    width: 40,
+    height: 40,
+  },
+  
+  profileButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.primary[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadows.md,
+  },
+  
+  profileIcon: {
+    fontSize: Typography.fontSize.xl,
+    color: Colors.primary[600],
   },
   
   scrollView: {
@@ -132,15 +182,9 @@ const styles = StyleSheet.create({
   
   logoContainer: {
     alignItems: 'center',
-    paddingTop: Spacing['3xl'],
+    paddingTop: Spacing.xl,
     paddingBottom: Spacing['2xl'],
     paddingHorizontal: Spacing.lg,
-  },
-  
-  logoImage: {
-    width: 200,
-    height: 250,
-    marginBottom: Spacing.xl,
   },
   
   welcomeText: {

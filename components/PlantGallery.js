@@ -46,6 +46,22 @@ const Typography = {
 };
 // Fim da simulação do DesignSystem
 
+const PLACEHOLDER_IMAGE = require('../assets/placeholder.png');
+
+const resolveImageSource = (imageData) => {
+  if (typeof imageData === 'string' && imageData.length > 0) {
+    const trimmed = imageData.trim();
+    if (trimmed.startsWith('data:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return { uri: trimmed };
+    }
+    const compact = trimmed.replace(/\s/g, '');
+    if (compact.length > 0 && /^[A-Za-z0-9+/=]+$/.test(compact)) {
+      return { uri: `data:image/jpeg;base64,${compact}` };
+    }
+  }
+  return PLACEHOLDER_IMAGE;
+};
+
 const PlantGallery = ({ navigation }) => {
   const [plants, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,7 +100,7 @@ const PlantGallery = ({ navigation }) => {
         activeOpacity={0.8}
       >
         <Image 
-          source={{ uri: item.image_data }} 
+          source={resolveImageSource(item.image_data)} 
           style={styles.plantImage}
           resizeMode="cover"
         />
@@ -101,6 +117,19 @@ const PlantGallery = ({ navigation }) => {
               {item.city || 'Local não disponível'}
             </Text>
           </View>
+          {item.reminder_enabled ? (
+            <View style={styles.reminderBadge}>
+              <Feather name="bell" size={12} color={Colors.text.inverse} />
+              <Text style={styles.reminderText}>
+                {`Rega a cada ${item.watering_frequency_days || '?'} dia(s)`}
+              </Text>
+            </View>
+          ) : null}
+          {item.notes ? (
+            <Text style={styles.notesPreview} numberOfLines={2}>
+              {item.notes}
+            </Text>
+          ) : null}
         </View>
       </TouchableOpacity>
     );
@@ -108,8 +137,18 @@ const PlantGallery = ({ navigation }) => {
 
   const renderHeader = () => (
     <View style={styles.headerContent}>
-      <Text style={styles.headerTitle}>Minha Coleção</Text>
-      <Text style={styles.headerSubtitle}>{plants.length} {plants.length === 1 ? 'planta registrada' : 'plantas registradas'}</Text>
+      <View style={styles.headerRow}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()}
+        >
+          <Feather name="arrow-left" size={24} color={Colors.text.secondary} />
+        </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Minha Coleção</Text>
+          <Text style={styles.headerSubtitle}>{plants.length} {plants.length === 1 ? 'planta registrada' : 'plantas registradas'}</Text>
+        </View>
+      </View>
     </View>
   );
 
@@ -175,6 +214,21 @@ const styles = StyleSheet.create({
     paddingTop: Spacing['2xl'],
     alignItems: 'flex-start',
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  backButton: { 
+    padding: 10, 
+    borderRadius: 20, 
+    backgroundColor: Colors.background.primary,
+    marginRight: Spacing.md,
+    ...Shadows.md,
+  },
+  headerTitleContainer: {
+    flex: 1,
+  },
   headerTitle: {
     ...Typography.styles.h2,
     color: Colors.text.primary,
@@ -221,6 +275,26 @@ const styles = StyleSheet.create({
   location: {
     ...Typography.styles.small,
     marginLeft: Spacing.xs,
+  },
+  reminderBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.primary[500],
+    borderRadius: BorderRadius.full,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    marginTop: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  reminderText: {
+    ...Typography.styles.small,
+    color: Colors.text.inverse,
+  },
+  notesPreview: {
+    ...Typography.styles.caption,
+    color: Colors.text.secondary,
+    marginTop: Spacing.xs,
   },
   centerContainer: {
     flex: 1,

@@ -126,10 +126,18 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
-        <View style={styles.header}>
-            <Feather name="search" size={28} color="#16A34A" />
-            <Text style={styles.headerTitle}>Explorar Plantas</Text>
-            <Text style={styles.headerSubtitle}>Encontre plantas salvas na sua coleção</Text>
+        <View style={styles.headerWithBack}>
+            <TouchableOpacity 
+              style={styles.backButton} 
+              onPress={() => navigation.goBack()}
+            >
+              <Feather name="arrow-left" size={24} color="#475569" />
+            </TouchableOpacity>
+            <View style={styles.header}>
+              <Feather name="search" size={28} color="#16A34A" />
+              <Text style={styles.headerTitle}>Explorar Plantas</Text>
+              <Text style={styles.headerSubtitle}>Encontre plantas salvas na sua coleção</Text>
+            </View>
         </View>
 
         <View style={styles.searchContainer}>
@@ -196,7 +204,25 @@ export default function SearchScreen() {
 // --- NOVOS ESTILOS PROFISSIONAIS ---
 const styles = StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: "#F8FAFC" },
-    header: { alignItems: 'center', paddingVertical: 24, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+    headerWithBack: { 
+        flexDirection: 'row', 
+        paddingVertical: 24, 
+        paddingHorizontal: 16, 
+        borderBottomWidth: 1, 
+        borderBottomColor: '#f1f5f9',
+        alignItems: 'flex-start',
+    },
+    backButton: { 
+        padding: 8, 
+        borderRadius: 20, 
+        backgroundColor: '#F1F5F9',
+        marginRight: 12,
+        marginTop: 4,
+    },
+    header: { 
+        flex: 1,
+        alignItems: 'center', 
+    },
     headerTitle: { fontSize: 28, fontWeight: 'bold', color: "#1E293B", marginTop: 8 },
     headerSubtitle: { fontSize: 16, color: "#475569" },
     

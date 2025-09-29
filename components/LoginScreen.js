@@ -97,6 +97,12 @@ class LoginScreen extends Component {
     return (
       <LinearGradient colors={['#E9F5DB', '#FFFFFF']} style={styles.container}>
         <StatusBar barStyle="dark-content" />
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => this.props.navigation.goBack()}
+        >
+          <Feather name="arrow-left" size={24} color="#475569" />
+        </TouchableOpacity>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}>
@@ -173,6 +179,15 @@ const LoginScreenWithNavigation = (props) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  backButton: { 
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    padding: 8, 
+    borderRadius: 20, 
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
   },
   keyboardView: {
     flex: 1,

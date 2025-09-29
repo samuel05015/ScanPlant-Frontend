@@ -47,6 +47,22 @@ const Typography = {
 };
 // Fim da simulação do DesignSystem
 
+const PLACEHOLDER_IMAGE = require('../assets/placeholder.png');
+
+const resolveImageSource = (imageData) => {
+  if (typeof imageData === 'string' && imageData.length > 0) {
+    const trimmed = imageData.trim();
+    if (trimmed.startsWith('data:') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return { uri: trimmed };
+    }
+    const compact = trimmed.replace(/\s/g, '');
+    if (compact.length > 0 && /^[A-Za-z0-9+/=]+$/.test(compact)) {
+      return { uri: `data:image/jpeg;base64,${compact}` };
+    }
+  }
+  return PLACEHOLDER_IMAGE;
+};
+
 
 const PlantDetailScreen = () => {
   const navigation = useNavigation();
@@ -110,10 +126,9 @@ const PlantDetailScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.imageContainer}>
             <Image
-                source={{ uri: plant.image_data }}
+        source={resolveImageSource(plant.image_data)}
                 style={styles.plantImage}
                 resizeMode="cover"
-                defaultSource={require('../assets/placeholder.png')} // Adicione uma imagem placeholder no seu projeto
             />
             <LinearGradient
                 colors={['rgba(0,0,0,0.6)', 'transparent', 'rgba(0,0,0,0.8)']}
@@ -138,9 +153,28 @@ const PlantDetailScreen = () => {
             <InfoRow label="Gênero" value={plant.genus} />
             <InfoRow label="Cuidados" value={plant.care_instructions} />
 
+            <Text style={styles.sectionTitle}>Lembrete de Rega</Text>
+            <InfoRow
+              label="Status"
+              value={plant.reminder_enabled ? 'Ativado' : 'Desativado'}
+            />
+            {plant.reminder_enabled && (
+              <InfoRow
+                label="Frequência"
+                value={plant.watering_frequency_days ? `${plant.watering_frequency_days} dia(s)` : (plant.watering_frequency_text || 'Informação indisponível')}
+              />
+            )}
+
             <Text style={styles.sectionTitle}>Localização</Text>
             <InfoRow label="Cidade" value={plant.city} />
             <InfoRow label="Local Específico" value={plant.location_name} />
+
+            {plant.notes ? (
+              <>
+                <Text style={styles.sectionTitle}>Anotações</Text>
+                <Text style={styles.notesText}>{plant.notes}</Text>
+              </>
+            ) : null}
 
             <View style={styles.footer}>
                 <Text style={styles.dateText}>Registrada em {formatDate(plant.created_at)}</Text>
@@ -227,6 +261,13 @@ const styles = StyleSheet.create({
   },
   infoValueItalic: {
     fontStyle: 'italic',
+  },
+  notesText: {
+    ...Typography.styles.body,
+    color: Colors.text.primary,
+    backgroundColor: Colors.background.secondary,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
   },
   footer: {
     marginTop: Spacing.xl,
