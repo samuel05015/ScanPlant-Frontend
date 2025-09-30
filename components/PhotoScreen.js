@@ -40,7 +40,7 @@ try {
 // --- CONFIGURAÇÕES E CONSTANTES ---
 const PLANT_ID_API_KEY = 'lz8GUbeXEkLexa0nWTZ0n1dU8DOOiLMdeOPA3BY5nWrC2p2D6O';
 const PLANT_ID_API_URL = 'https://api.plant.id/v2/identify';
-const GROQ_API_KEY = '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'; 
+const GROQ_API_KEY = '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'; // Remova a chave real antes de enviar para o GitHub
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const REVERSE_GEOCODING_API_URL = 'https://nominatim.openstreetmap.org/reverse';
 
@@ -156,7 +156,7 @@ export default function PhotoScreen() {
   };
 
   const fetchPlantInfoWithAI = async (scientificName) => {
-    if (GROQ_API_KEY === 'SUA_CHAVE_GROQ') {
+    if (GROQ_API_KEY === 'YOUR_GROQ_API_KEY') {
         Alert.alert("Aviso", "Por favor, insira sua chave da API da Groq no código para a IA funcionar.");
         return {
           common_name: 'Configure a IA',
