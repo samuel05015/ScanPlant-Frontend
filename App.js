@@ -20,6 +20,28 @@ import ChatScreen from './components/ChatScreen';
 import UserListScreen from './components/UserListScreen';
 import PlantAssistantChat from './components/PlantAssistantChat';
 
+// Desativa console.log e outros métodos do console em produção
+if (!__DEV__) {
+  const noOp = () => {};
+  
+  // Salva os métodos originais para depuração caso necessário
+  const originalConsole = { ...console };
+  
+  // Substitui os métodos do console por funções vazias
+  console.log = noOp;
+  console.warn = noOp;
+  console.error = noOp;
+  console.info = noOp;
+  console.debug = noOp;
+  
+  // Método para restaurar console original se necessário em algum ponto
+  console.restoreConsole = () => {
+    Object.keys(originalConsole).forEach(key => {
+      console[key] = originalConsole[key];
+    });
+  };
+}
+
 // Import notifications de forma segura
 let Notifications;
 try {
