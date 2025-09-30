@@ -1,15 +1,15 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  Modal,
   TextInput,
   FlatList,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  StatusBar,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from './styles/DesignSystem';
@@ -80,7 +80,7 @@ const generateResponse = (question) => {
   return PLANT_RESPONSES.notFound;
 };
 
-const PlantAssistantChat = ({ navigation }) => {
+const PlantAssistantChat = ({ visible, onClose }) => {
   const [messages, setMessages] = useState([
     { id: '1', text: PLANT_RESPONSES.default, sender: 'bot' }
   ]);
@@ -117,27 +117,32 @@ const PlantAssistantChat = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background.primary} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoid}
-      >
-        <View style={styles.chatContainer}>
-          <View style={styles.chatHeader}>
-            <View style={styles.headerContent}>
-              <View style={styles.avatarContainer}>
-                <Feather name="cpu" size={20} color={Colors.primary[500]} />
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <SafeAreaView style={styles.modalContainer}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardAvoid}
+        >
+          <View style={styles.chatContainer}>
+            <View style={styles.chatHeader}>
+              <View style={styles.headerContent}>
+                <View style={styles.avatarContainer}>
+                  <Feather name="cpu" size={20} color={Colors.primary[500]} />
+                </View>
+                <View>
+                  <Text style={styles.headerTitle}>Assistente de Plantas</Text>
+                  <Text style={styles.headerSubtitle}>Pergunte sobre cuidados com plantas</Text>
+                </View>
               </View>
-              <View>
-                <Text style={styles.headerTitle}>Especialista Botânico</Text>
-                <Text style={styles.headerSubtitle}>Pergunte sobre cuidados com plantas</Text>
-              </View>
+              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <Feather name="x" size={24} color={Colors.text.secondary} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
-              <Feather name="x" size={24} color={Colors.text.secondary} />
-            </TouchableOpacity>
-          </View>
 
             <FlatList
               data={messages}
@@ -165,11 +170,11 @@ const PlantAssistantChat = ({ navigation }) => {
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
+    </Modal>
   );
 };
 
-// Componente do botão flutuante - usado para referência caso precise readicioná-lo
-/*
+// Componente do botão flutuante
 export const PlantAssistantButton = () => {
   const [chatVisible, setChatVisible] = useState(false);
 
@@ -187,7 +192,6 @@ export const PlantAssistantButton = () => {
     </>
   );
 };
-*/
 
 const styles = StyleSheet.create({
   floatingButton: {
@@ -205,19 +209,23 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary[500],
   },
   
-  safeArea: {
+  modalContainer: {
     flex: 1,
-    backgroundColor: Colors.background.primary,
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   
   keyboardAvoid: {
     flex: 1,
+    justifyContent: 'flex-end',
   },
   
   chatContainer: {
-    flex: 1,
+    height: '80%',
     backgroundColor: Colors.background.primary,
+    borderTopLeftRadius: BorderRadius['2xl'],
+    borderTopRightRadius: BorderRadius['2xl'],
     overflow: 'hidden',
+    ...Shadows.xl,
   },
   
   chatHeader: {
@@ -329,4 +337,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PlantAssistantChat;
+export default PlantAssistantButton;

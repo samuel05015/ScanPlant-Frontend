@@ -231,6 +231,8 @@ export const Icons = {
   location: '⌖',
   calendar: '▣',
   collection: '⊞',
+  users: '⋙',
+  community: '▦',
   
   // Plantas
   plant: '❋',

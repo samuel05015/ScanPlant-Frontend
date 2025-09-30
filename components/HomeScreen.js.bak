@@ -1,11 +1,26 @@
-﻿import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Image,
-  TouchableOpacity,
-  ScrollView,
+  TouchableOpacit                 <TouchableOpacity 
+            style={styles.assistantButton}
+            onPress={openChat}
+          >
+            <View style={styles.assistantIconBackground}>
+              <Text style={styles.assistantIcon}>🤖</Text>
+            </View>
+            <Text style={styles.assistantText}>IA Botânica</Text>
+          </TouchableOpacity>ableOpacity 
+            style={styles.assistantButton}
+            onPress={openChat}
+          >
+            <View style={styles.assistantIconBackground}>
+              <Text style={styles.assistantIcon}>🤖</Text>
+            </View>
+            <Text style={styles.assistantText}>IA Botânica</Text>
+          </TouchableOpacity>ollView,
   SafeAreaView,
   StatusBar,
   Modal,
@@ -13,10 +28,12 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Colors, Typography, Spacing, BorderRadius, Shadows, BaseStyles, Icons } from './styles/DesignSystem';
 import { Feather } from '@expo/vector-icons';
+import ShimmerMessage from './ShimmerMessage';
 
 // Respostas pré-definidas para perguntas comuns sobre plantas
 const PLANT_RESPONSES = {
@@ -45,8 +62,12 @@ const generateResponse = (question) => {
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [chatVisible, setChatVisible] = useState(false);
-  const [messages, setMessages] = useState([{ id: '1', text: PLANT_RESPONSES.default, sender: 'bot' }]);
+  const [messages, setMessages] = useState([
+    { id: '1', text: "Olá! 👋 Sou a IA Botânica avançada do ScanPlant. Posso ajudar com:\n\n🔍 Identificação de plantas\n🌱 Dicas de cultivo e cuidados\n🌿 Solução de problemas com suas plantas\n💧 Orientações sobre rega e iluminação\n\nComo posso ajudar você hoje?", sender: 'bot' }
+  ]);
   const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const flatListRef = useRef(null);
 
   const goToPlantGallery = () => {
     navigation.navigate('PlantGallery');
@@ -67,6 +88,14 @@ const HomeScreen = () => {
   const openChat = () => setChatVisible(true);
   const closeChat = () => setChatVisible(false);
   
+  // Função para calcular o tempo de digitação baseado no tamanho da resposta
+  const calculateTypingTime = (text) => {
+    // Base de 500ms + 20ms por caractere
+    const baseTime = 500;
+    const charTime = 20;
+    return Math.min(baseTime + (text.length * charTime), 3000); // Máximo de 3 segundos
+  };
+  
   const sendMessage = () => {
     if (inputText.trim() === '') return;
     
@@ -74,13 +103,32 @@ const HomeScreen = () => {
     const userMessage = { id: Date.now().toString(), text: inputText, sender: 'user' };
     setMessages(currentMessages => [...currentMessages, userMessage]);
     
-    // Gera e adiciona a resposta do bot
-    setTimeout(() => {
-      const botResponse = { id: (Date.now() + 1).toString(), text: generateResponse(inputText), sender: 'bot' };
-      setMessages(currentMessages => [...currentMessages, botResponse]);
-    }, 500);
-    
+    // Limpa o campo de texto
     setInputText('');
+    
+    // Ativa o efeito de digitação
+    setIsTyping(true);
+    
+    // Gera a resposta
+    const response = generateResponse(inputText);
+    
+    // Calcula tempo de digitação baseado no tamanho da resposta
+    const typingTime = calculateTypingTime(response);
+    
+    // Simula o tempo de digitação antes de mostrar a resposta
+    setTimeout(() => {
+      // Desativa o efeito de digitação
+      setIsTyping(false);
+      
+      // Adiciona a resposta do bot
+      const botResponse = { id: (Date.now() + 1).toString(), text: response, sender: 'bot' };
+      setMessages(currentMessages => [...currentMessages, botResponse]);
+      
+      // Rola para o final da lista
+      if (flatListRef.current) {
+        flatListRef.current.scrollToEnd({ animated: true });
+      }
+    }, typingTime);
   };
 
   return (
@@ -98,12 +146,12 @@ const HomeScreen = () => {
         <View style={styles.headerActions}>
           <TouchableOpacity 
             style={styles.assistantButton}
-            onPress={() => navigation.navigate('PlantAssistantChat')}
+            onPress={openChat}
           >
             <View style={styles.assistantIconBackground}>
-              <Text style={styles.assistantIcon}>🌿</Text>
+              <Text style={styles.assistantIcon}>�</Text>
             </View>
-            <Text style={styles.assistantText}>Assistente</Text>
+            <Text style={styles.assistantText}>Especialista</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -114,6 +162,82 @@ const HomeScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+      
+      {/* Modal do Chat do Assistente Botânico */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={chatVisible}
+        onRequestClose={closeChat}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.keyboardAvoid}
+          >
+            <View style={styles.chatContainer}>
+              <View style={styles.chatHeader}>
+                <View style={styles.headerContent}>
+                  <View style={styles.chatAvatarContainer}>
+                    <Text style={styles.plantIcon}>�</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.headerTitle}>Especialista Botânico</Text>
+                    <Text style={styles.headerSubtitle}>Seu consultor de plantas pessoal</Text>
+                  </View>
+                </View>
+                <TouchableOpacity style={styles.closeButton} onPress={closeChat}>
+                  <Feather name="x" size={24} color={Colors.text.secondary} />
+                </TouchableOpacity>
+              </View>
+
+              <FlatList
+                ref={flatListRef}
+                data={messages}
+                renderItem={({ item }) => (
+                  <View style={[
+                    styles.messageBubble,
+                    item.sender === 'user' ? styles.userMessage : styles.botMessage
+                  ]}>
+                    <Text style={[
+                      styles.messageText,
+                      item.sender === 'user' ? styles.userMessageText : styles.botMessageText
+                    ]}>
+                      {item.text}
+                    </Text>
+                  </View>
+                )}
+                keyExtractor={item => item.id}
+                contentContainerStyle={styles.messageList}
+                inverted={false}
+                showsVerticalScrollIndicator={false}
+                onContentSizeChange={() => flatListRef.current?.scrollToEnd({animated: true})}
+              />
+              
+              {isTyping && (
+                <View style={{paddingHorizontal: Spacing.lg}}>
+                  <ShimmerMessage />
+                </View>
+              )}
+
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Digite sua pergunta..."
+                  value={inputText}
+                  onChangeText={setInputText}
+                  multiline
+                  returnKeyType="send"
+                  onSubmitEditing={sendMessage}
+                />
+                <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+                  <Feather name="send" size={22} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
       
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {/* Logo Container */}
@@ -294,34 +418,45 @@ const styles = StyleSheet.create({
   assistantButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 150, 136, 0.85)',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.xl,
+    backgroundColor: 'rgba(83, 177, 117, 0.92)',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: 22,
     marginRight: Spacing.md,
-    ...Shadows.md,
+    ...Shadows.lg,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.6)',
+    borderColor: '#A0E5B2',
+    elevation: 4,
   },
   
   assistantIconBackground: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   
   assistantIcon: {
-    fontSize: 16,
+    fontSize: 18,
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
   },
   
   assistantText: {
     ...Typography.styles.button,
-    color: Colors.text.inverse,
-    marginLeft: 4,
+    color: '#FFFFFF',
+    marginLeft: 8,
     fontWeight: 'bold',
+    fontSize: Typography.fontSize.md,
+    letterSpacing: 0.3,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   
   profileButton: {
@@ -332,6 +467,171 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     ...Shadows.md,
+  },
+  
+  // Estilos para o modal do chat
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  
+  keyboardAvoid: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  
+  chatContainer: {
+    height: '80%',
+    backgroundColor: Colors.background.primary,
+    borderTopLeftRadius: BorderRadius['2xl'],
+    borderTopRightRadius: BorderRadius['2xl'],
+    overflow: 'hidden',
+    ...Shadows.xl,
+  },
+  
+  chatHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(83, 177, 117, 0.2)',
+    backgroundColor: 'rgba(245, 250, 247, 0.95)',
+    borderTopLeftRadius: BorderRadius['2xl'],
+    borderTopRightRadius: BorderRadius['2xl'],
+  },
+  
+  headerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  
+  chatAvatarContainer: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    backgroundColor: 'rgba(83, 177, 117, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+    borderWidth: 1.5,
+    borderColor: 'rgba(83, 177, 117, 0.5)',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  
+  plantIcon: {
+    fontSize: 24,
+  },
+  
+  headerTitle: {
+    ...Typography.styles.bodyMedium,
+    color: 'rgba(50, 120, 80, 1)',
+    fontWeight: 'bold',
+    fontSize: Typography.fontSize.lg,
+    letterSpacing: 0.2,
+  },
+  
+  headerSubtitle: {
+    ...Typography.styles.small,
+    color: 'rgba(83, 177, 117, 0.8)',
+    fontStyle: 'italic',
+  },
+  
+  closeButton: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.neutral[100],
+  },
+  
+  messageList: {
+    padding: Spacing.lg,
+    flexGrow: 1,
+  },
+  
+  messageBubble: {
+    maxWidth: '80%',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
+  },
+  
+  userMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(83, 177, 117, 0.9)',
+    borderBottomRightRadius: BorderRadius.sm,
+    borderTopLeftRadius: BorderRadius.xl,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  
+  botMessage: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F5F9F6',
+    borderBottomLeftRadius: BorderRadius.sm,
+    borderTopRightRadius: BorderRadius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(83, 177, 117, 0.2)',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  
+  messageText: {
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  
+  userMessageText: {
+    color: Colors.text.inverse,
+  },
+  
+  botMessageText: {
+    color: Colors.text.primary,
+  },
+  
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.neutral[100],
+  },
+  
+  textInput: {
+    flex: 1,
+    padding: Spacing.md,
+    paddingVertical: Platform.OS === 'ios' ? Spacing.md : Spacing.sm,
+    backgroundColor: Colors.neutral[50],
+    borderRadius: BorderRadius.lg,
+    maxHeight: 100,
+    ...Typography.styles.body,
+  },
+  
+  sendButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(83, 177, 117, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: Spacing.sm,
+    borderWidth: 1.5,
+    borderColor: '#A0E5B2',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   
   profileIcon: {

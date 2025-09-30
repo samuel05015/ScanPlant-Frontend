@@ -391,6 +391,13 @@ const ProfileSettingsScreen = () => {
               </TouchableOpacity>
               
               <TouchableOpacity
+                style={[styles.button, {backgroundColor: Colors.success}]}
+                onPress={() => navigation.navigate('ChatList')}
+              >
+                <Text style={styles.buttonText}>Minhas Conversas</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
                 style={[styles.button, styles.logoutButton]}
                 onPress={handleLogout}
               >

@@ -1,0 +1,16 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  StatusBar,
+  Modal,
+  TextInput,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';

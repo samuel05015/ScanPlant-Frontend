@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { database } from './supabase'; // Verifique se o caminho está correto
+import { supabase } from './supabase'; // Corrigido: 'database' para 'supabase'
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -67,9 +67,67 @@ const resolveImageSource = (imageData) => {
 const PlantDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { plant } = route.params;
+  const [plant, setPlant] = React.useState(route.params.plant);
+  const [loading, setLoading] = React.useState(!route.params.plant);
+  const [error, setError] = React.useState(null);
+  
+  // Buscar detalhes da planta se apenas o ID foi fornecido
+  React.useEffect(() => {
+    const fetchPlantDetails = async () => {
+      if (route.params.plantId && !route.params.plant) {
+        try {
+          setLoading(true);
+          const { data, error } = await supabase
+            .from('plants')
+            .select('*')
+            .eq('id', route.params.plantId)
+            .single();
+            
+          if (error) throw error;
+          setPlant(data);
+        } catch (err) {
+          console.error('Erro ao buscar detalhes da planta:', err);
+          setError('Não foi possível carregar os detalhes da planta');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    
+    fetchPlantDetails();
+  }, [route.params.plantId]);
+  
+  // Mostrar tela de carregamento
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, styles.loadingContainer]}>
+        <StatusBar barStyle="dark-content" />
+        <ActivityIndicator size="large" color={Colors.primary[500]} />
+        <Text style={styles.loadingText}>Carregando detalhes da planta...</Text>
+      </SafeAreaView>
+    );
+  }
+  
+  // Mostrar tela de erro
+  if (error || !plant) {
+    return (
+      <SafeAreaView style={[styles.container, styles.errorContainer]}>
+        <StatusBar barStyle="dark-content" />
+        <Feather name="alert-triangle" size={64} color={Colors.error[500]} />
+        <Text style={styles.errorText}>{error || 'Planta não encontrada'}</Text>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backButtonText}>Voltar</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
 
   const deletePlant = () => {
+    if (!plant || !plant.id) {
+      Alert.alert('Erro', 'Não foi possível encontrar informações sobre esta planta.');
+      return;
+    }
+    
     Alert.alert(
       'Excluir Planta',
       'Tem certeza que deseja remover esta planta da sua coleção?',
@@ -80,7 +138,10 @@ const PlantDetailScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              const { error } = await database.delete('plants', { id: plant.id });
+              const { error } = await supabase
+                .from('plants')
+                .delete()
+                .eq('id', plant.id);
               if (error) throw error;
               Alert.alert('Sucesso', 'Planta excluída com sucesso!');
               navigation.goBack();
@@ -126,7 +187,9 @@ const PlantDetailScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.imageContainer}>
             <Image
-        source={resolveImageSource(plant.image_data)}
+                source={plant && (plant.image_data || plant.image_url) ? 
+                  resolveImageSource(plant.image_data || plant.image_url) : 
+                  PLACEHOLDER_IMAGE}
                 style={styles.plantImage}
                 resizeMode="cover"
             />
@@ -141,35 +204,35 @@ const PlantDetailScreen = () => {
         </View>
 
         <View style={styles.contentContainer}>
-            <Text style={styles.commonName}>{plant.common_name || 'Nome não disponível'}</Text>
-            <Text style={styles.scientificName}>{plant.scientific_name || 'Nome científico não disponível'}</Text>
+            <Text style={styles.commonName}>{plant?.common_name || 'Nome não disponível'}</Text>
+            <Text style={styles.scientificName}>{plant?.scientific_name || 'Nome científico não disponível'}</Text>
             
             <View style={styles.divider} />
             
-            <InfoRow label="Descrição" value={plant.wiki_description || plant.enhanced_description} />
+            <InfoRow label="Descrição" value={plant?.wiki_description || plant?.enhanced_description || 'Descrição não disponível'} />
             
             <Text style={styles.sectionTitle}>Detalhes</Text>
-            <InfoRow label="Família" value={plant.family} />
-            <InfoRow label="Gênero" value={plant.genus} />
-            <InfoRow label="Cuidados" value={plant.care_instructions} />
+            <InfoRow label="Família" value={plant?.family || 'Não disponível'} />
+            <InfoRow label="Gênero" value={plant?.genus || 'Não disponível'} />
+            <InfoRow label="Cuidados" value={plant?.care_instructions || 'Cuidados não disponíveis'} />
 
             <Text style={styles.sectionTitle}>Lembrete de Rega</Text>
             <InfoRow
               label="Status"
-              value={plant.reminder_enabled ? 'Ativado' : 'Desativado'}
+              value={plant?.reminder_enabled ? 'Ativado' : 'Desativado'}
             />
-            {plant.reminder_enabled && (
+            {plant?.reminder_enabled && (
               <InfoRow
                 label="Frequência"
-                value={plant.watering_frequency_days ? `${plant.watering_frequency_days} dia(s)` : (plant.watering_frequency_text || 'Informação indisponível')}
+                value={plant?.watering_frequency_days ? `${plant?.watering_frequency_days} dia(s)` : (plant?.watering_frequency_text || 'Informação indisponível')}
               />
             )}
 
             <Text style={styles.sectionTitle}>Localização</Text>
-            <InfoRow label="Cidade" value={plant.city} />
-            <InfoRow label="Local Específico" value={plant.location_name} />
+            <InfoRow label="Cidade" value={plant?.city || 'Não disponível'} />
+            <InfoRow label="Local Específico" value={plant?.location_name || 'Não disponível'} />
 
-            {plant.notes ? (
+            {plant?.notes ? (
               <>
                 <Text style={styles.sectionTitle}>Anotações</Text>
                 <Text style={styles.notesText}>{plant.notes}</Text>
@@ -177,7 +240,7 @@ const PlantDetailScreen = () => {
             ) : null}
 
             <View style={styles.footer}>
-                <Text style={styles.dateText}>Registrada em {formatDate(plant.created_at)}</Text>
+                <Text style={styles.dateText}>Registrada em {formatDate(plant?.created_at)}</Text>
             </View>
         </View>
       </ScrollView>
@@ -275,6 +338,37 @@ const styles = StyleSheet.create({
   },
   dateText: {
     ...Typography.styles.caption,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    ...Typography.styles.body,
+    color: Colors.text.primary,
+    marginTop: Spacing.md,
+  },
+  errorContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  errorText: {
+    ...Typography.styles.body,
+    color: Colors.text.primary,
+    textAlign: 'center',
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.lg,
+  },
+  backButton: {
+    backgroundColor: Colors.primary[500],
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+  },
+  backButtonText: {
+    ...Typography.styles.buttonText,
+    color: Colors.white,
   },
 });
 

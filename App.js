@@ -15,6 +15,10 @@ import LoadingScreenSave from './components/LoadingScreenSave';
 import PlantGallery from './components/PlantGallery';
 import PlantDetailScreen from './components/PlantDetailScreen';
 import ProfileSettingsScreen from './components/ProfileSettingsScreen';
+import ChatListScreen from './components/ChatListScreen';
+import ChatScreen from './components/ChatScreen';
+import UserListScreen from './components/UserListScreen';
+import PlantAssistantChat from './components/PlantAssistantChat';
 
 // Import notifications de forma segura
 let Notifications;
@@ -60,18 +64,35 @@ const App = () => {
   useEffect(() => {
     const setupNotifications = async () => {
       try {
+        // Pedir permissão de notificação ao iniciar o aplicativo
+        if (Notifications && typeof Notifications.requestPermissionsAsync === 'function') {
+          const { granted } = await Notifications.requestPermissionsAsync({
+            ios: {
+              allowAlert: true,
+              allowBadge: true,
+              allowSound: true,
+              allowAnnouncements: true,
+            },
+          });
+          
+          console.log('Permissão inicial de notificações:', granted ? 'concedida' : 'negada');
+        }
+        
+        // Criar canal de notificação para Android
         if (Platform.OS === 'android' && Notifications && typeof Notifications.setNotificationChannelAsync === 'function') {
           await Notifications.setNotificationChannelAsync('watering-reminders', {
             name: 'Lembretes de Rega',
-            importance: Notifications.AndroidImportance.HIGH,
+            description: 'Notificações para lembrá-lo de regar suas plantas',
+            importance: Notifications.AndroidImportance?.HIGH || 4,
             vibrationPattern: [0, 250, 250, 250],
             lightColor: '#22C55E',
+            sound: 'default',
           });
           console.log('Canal de notificações configurado com sucesso');
         }
       } catch (error) {
-        console.warn('Falha ao configurar canal de notificações:', error);
-        // Continuar sem criar o canal de notificação
+        console.warn('Falha ao configurar notificações:', error);
+        // Continuar mesmo se falhar a configuração
       }
     };
     
@@ -97,6 +118,10 @@ const App = () => {
             <Stack.Screen name="PlantGallery" component={PlantGallery} />
             <Stack.Screen name="PlantDetail" component={PlantDetailScreen} />
             <Stack.Screen name="ProfileSettings" component={ProfileSettingsScreen} />
+            <Stack.Screen name="ChatList" component={ChatListScreen} />
+            <Stack.Screen name="Chat" component={ChatScreen} />
+            <Stack.Screen name="UserList" component={UserListScreen} />
+            <Stack.Screen name="PlantAssistantChat" component={PlantAssistantChat} />
             
           </>
         )}
