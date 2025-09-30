@@ -40,7 +40,7 @@ try {
 // --- CONFIGURAÇÕES E CONSTANTES ---
 const PLANT_ID_API_KEY = 'lz8GUbeXEkLexa0nWTZ0n1dU8DOOiLMdeOPA3BY5nWrC2p2D6O';
 const PLANT_ID_API_URL = 'https://api.plant.id/v2/identify';
-const GROQ_API_KEY = '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'; // Remova a chave real antes de enviar para o GitHub
+const GROQ_API_KEY = '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'; // Chave da API GROQ
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const REVERSE_GEOCODING_API_URL = 'https://nominatim.openstreetmap.org/reverse';
 
@@ -156,7 +156,7 @@ export default function PhotoScreen() {
   };
 
   const fetchPlantInfoWithAI = async (scientificName) => {
-    if (GROQ_API_KEY === 'YOUR_GROQ_API_KEY') {
+    if (!GROQ_API_KEY || GROQ_API_KEY === 'SUA_CHAVE_GROQ_AQUI') {
         Alert.alert("Aviso", "Por favor, insira sua chave da API da Groq no código para a IA funcionar.");
         return {
           common_name: 'Configure a IA',
@@ -169,10 +169,11 @@ export default function PhotoScreen() {
         };
     }
     try {
+      const apiKey = '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';
       const response = await fetch(GROQ_API_URL, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${GROQ_API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -231,18 +232,32 @@ export default function PhotoScreen() {
       };
     } catch (error) {
       console.error('Erro na API Groq:', error);
-      // Mostrar informações mais detalhadas sobre o erro
-      Alert.alert(
-        'Erro na API da Groq',
-        `Detalhes do erro: ${error.message || 'Erro desconhecido'}`
+      
+      // Verifica se é erro de autenticação
+      const isAuthError = error.message && (
+        error.message.includes('401') || 
+        error.message.includes('invalid_api_key')
       );
+      
+      if (isAuthError) {
+        Alert.alert(
+          'Problema com a chave API',
+          'Verifique se a chave da API Groq está configurada corretamente.'
+        );
+      } else {
+        Alert.alert(
+          'Erro no serviço de IA',
+          'Não foi possível obter informações detalhadas. Tente novamente mais tarde.'
+        );
+      }
+      
       return {
-        common_name: 'Erro na IA',
-        description: 'Erro na IA',
-        care_instructions: 'Erro na IA',
-        family: 'Erro na IA',
-        genus: 'Erro na IA',
-        watering_frequency_text: 'Erro ao obter frequência',
+        common_name: 'Dados indisponíveis',
+        description: 'Não foi possível obter informações detalhadas sobre esta planta no momento.',
+        care_instructions: 'Consulte um especialista para obter dicas de cuidados adequados.',
+        family: 'Não identificada',
+        genus: 'Não identificado',
+        watering_frequency_text: 'Informação indisponível',
         watering_frequency_days: null,
       };
     }
